@@ -1,0 +1,353 @@
+---
+title: "Project 2: data preparation"
+format: html
+toc: TRUE
+editor: visual
+---
+
+# Packages
+
+Load the necessary packages.
+
+```{r,warning=FALSE}
+
+# Require will load the package if available and return FALSE if not available by adding the ! we will return TRUE if the package is not available, running the code in the if statement
+if(!require(tidyverse)){
+    # If package is not available, install it then load it again
+    install.packages("tidyverse")
+    library(tidyverse)
+}
+
+# Does same as above for other packages
+if(!require(tidyr)){
+    install.packages("tidyr")
+    library(tidyr)
+}
+
+if(!require(readr)){
+    install.packages("readr")
+    library(readr)
+}
+
+if(!require(ggplot2)){
+    install.packages("ggplot2")
+    library(ggplot2)
+}
+
+if(!require(dplyr)){
+    install.packages("dplyr")
+    library(dplyr)
+}
+
+if(!require(janitor)){
+    install.packages("janitor")
+    library(janitor)
+}  
+if(!require(reshape2)){
+    install.packages("reshape2")
+    library(reshape2)
+}
+```
+
+#Prepare your data
+## Read in the dataset
+
+I will be using the "Mobile Device Usage and User Behavior Dataset" from kaggle for this project.
+
+```{r}
+userBehavior <- read_csv("./data/user_behavior_dataset.csv")
+userBehavior
+
+# Janitor automatically fixes spaces, parentheses, slashes, and symbols
+userBehavior <- userBehavior |>
+  clean_names()
+userBehavior
+```
+
+## Data Manipulation  
+
+```{r}
+#create a categorical variable based on a numeric variable age to create an age group and recode user_behavior_class variable to add descriptive label as the values are numeric 1-5.
+userBehavior <- userBehavior |>
+  mutate(age_group = case_when(
+    age < 18 ~ "Under 18",
+    age >= 18 & age < 25 ~ "18-24",
+    age >= 25 & age < 35 ~ "25-34",
+    age >= 35 & age < 45 ~ "35-44",
+    age >= 45 & age < 60 ~ "45-59",
+    age >= 60 ~ "60+",
+    TRUE ~ NA_character_
+  ),
+  user_behavior_class_label = case_when(
+    user_behavior_class == 1 ~ "Minimal User",
+    user_behavior_class == 2 ~ "Light User",
+    user_behavior_class == 3 ~ "Moderate User",
+    user_behavior_class == 4 ~ "Heavy User",
+    user_behavior_class == 5 ~ "Power User",
+    TRUE ~ NA_character_))
+
+# change datatype from character to factor, dbl to character for user ID.
+userBehavior <- userBehavior |>
+  mutate(user_id=as.character(user_id),
+         operating_system = as.factor(operating_system),
+         gender = as.factor(gender),
+         user_behavior_class = as.factor(user_behavior_class)
+         )
+
+# to maintain my order and not let R order it alphabetically 
+userBehavior$user_behavior_class_label <- factor(
+  userBehavior$user_behavior_class_label,
+  levels = c("Minimal User", "Light User", "Moderate User", "Heavy User", "Power User"),
+  ordered = TRUE
+)
+userBehavior
+```
+
+## Explore the dataset 
+### One-Way contingency tables
+```{r}
+#these one way contingency tables show the gender, operating system and user behavior distribution in the dataset.
+tab_gender <- table(userBehavior$gender)
+tab_gender
+
+tab_operating_system <- table(userBehavior$operating_system)
+tab_operating_system
+
+
+tab_behavior_class <- table(userBehavior$user_behavior_class_label)
+tab_behavior_class
+```
+### Two-Way contingency tables
+```{r}
+# Two-way tables (joint frequency)
+table_behavior_os <- table(userBehavior$user_behavior_class_label, userBehavior$operating_system)
+table_behavior_os
+
+table_behavior_gender <- table(userBehavior$gender , userBehavior$user_behavior_class_label )
+table_behavior_gender
+
+table_os_gender <- table(userBehavior$operating_system, userBehavior$gender)
+table_os_gender
+prop.table(table_os_gender, margin = 2)  # proportions within gender
+
+```
+### Numerical summaries for quantitative variables by categorical groups
+
+```{r}
+# we can use the across() function and summarize all numeric variables at once 
+userBehavior |>
+  summarize(across(where(is.numeric), 
+                   list("mean" = mean, "median" = median,"Std"=sd) , 
+                   .names = "{.fn}_{.col}"))
+
+# This is summary of quantitative variables by user behavior classes (categorical). 
+userBehavior |>
+  group_by(user_behavior_class_label) |>
+  summarise(
+    mean_app_usage = mean(app_usage_time_min_day, na.rm = TRUE),
+    median_app_usage = median(app_usage_time_min_day, na.rm = TRUE),
+    sd_app_usage = sd(app_usage_time_min_day, na.rm = TRUE),
+    mean_data_usage = mean(data_usage_mb_day, na.rm = TRUE),
+    median_data_usage = median(data_usage_mb_day, na.rm = TRUE),
+    sd_data_usage = sd(data_usage_mb_day, na.rm = TRUE)
+    
+  )
+
+```
+### Graphical Summaries
+
+#### Plot 1: Distribution of user behavior class (Univariate Bar Plot)
+
+
+```{r}
+ggplot(userBehavior|> drop_na(user_behavior_class_label), aes(x = user_behavior_class_label, fill = user_behavior_class_label)) +
+  geom_bar() +
+  scale_fill_manual(
+    values = c(
+      "Minimal User" = "#00B050",   # green
+      "Light User"   = "#92D050",   # light green
+      "Moderate User"= "#FFC000",   # yellow
+      "Heavy User"   = "#FF7043",   # orange
+      "Power User"   = "#C00000"    # red
+    ),
+     name = "User Behavior Classes"
+  ) +
+  labs(title = "Distribution of User Behavior Classes",
+       x = "User Behavior Class", y = "Count") +
+  theme_minimal()
+```
+
+
+#### Plot 2: App Usage Time by Behavior Class (Boxplot)
+
+```{r}
+ggplot(userBehavior |> drop_na(user_behavior_class, app_usage_time_min_day), 
+       aes(x = user_behavior_class, y = app_usage_time_min_day, fill = user_behavior_class_label)) +
+  geom_boxplot() +
+   scale_fill_manual(
+    values = c(
+      "Minimal User" = "#00B050",   # green
+      "Light User"   = "#92D050",   # light green
+      "Moderate User"= "#FFC000",   # yellow
+      "Heavy User"   = "#FF7043",   # orange
+      "Power User"   = "#C00000"    # red
+    ),
+     name = "User Behavior Classes"
+   ) +
+  labs(title = "App Usage Time by User Behavior Class",
+       x = "User Behavior Class", y = "App Usage (min/day)") +
+  theme_minimal()
+
+```
+
+#### Plot 3: App usage by age group
+l
+```{r}
+g <- ggplot(userBehavior |> drop_na(app_usage_time_min_day, age_group) ,
+ aes(x = age_group, y = app_usage_time_min_day, fill = age_group))
+g + geom_boxplot() +
+ 
+  labs(
+    title = "App Usage by Age Group",
+    y = "App Usage (min/day)",
+    x = "Age Group"
+  ) +
+  theme_minimal()
+```
+
+
+
+#### Plot 4: Distribution of operating system by gender  (Boxplot)
+
+```{r}
+g <- ggplot(data = userBehavior |> drop_na(gender, operating_system), aes(x = gender, fill = operating_system))
+g + geom_bar(position = "dodge")+
+  labs(title = "Operating System Type by Gender", 
+       x = "Gender")+
+ scale_fill_discrete("Operating System")
+```
+
+
+#### Plot 5: Data Usage by Behavior Class and Gender (Multivariate Boxplot with Grouping)
+
+```{r}
+# Multivariate (Behavior class X Gender)
+ggplot(userBehavior, aes(x = user_behavior_class, y = data_usage_mb_day, fill = gender)) +
+  geom_boxplot(position = position_dodge(width = 0.8)) +
+  labs(title = "Data Usage by Behavior Class and Gender",
+       x = "User Behavior Class", y = "Data Usage (MB/day)", fill = "Gender") +
+  theme_minimal()
+
+```
+
+#### Plot 6: App Usage vs Data Usage colored by Operating System (Scatterplot)
+
+```{r}
+ggplot(userBehavior, aes(x = app_usage_time_min_day, y = data_usage_mb_day, color = operating_system)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  labs(title = "Relationship Between App Usage and Data Usage by OS",
+       x = "App Usage (min/day)", y = "Data Usage (MB/day)", color = "OS") +
+  theme_minimal()
+
+```
+
+#### Plot 7: App Usage vs Data Usage colored by Operating System (Scatterplot)
+
+```{r}
+ggplot(userBehavior, aes(x = number_of_apps_installed,
+                 y = screen_on_time_hours_day,
+                 color = age_group,
+                 size = age_group,
+                 )) +
+  geom_point(alpha = 0.7, size = 3)  +
+ scale_color_brewer(palette = "Spectral")  +
+  labs(
+    title = "Screen Time vs Number of Apps by Age Group",
+    x = "Number of Apps Installed",
+    y = "Screen On Time (hours/day)",
+    color = "Age Group",
+    
+  ) +
+  theme_minimal()
+
+```
+#### Plot 8: Screen time by gender (Boxplots with Points)
+l
+```{r}
+g <- ggplot(userBehavior |> drop_na(screen_on_time_hours_day, gender) ,
+ aes(x = gender, y = screen_on_time_hours_day, fill = gender))
+g + geom_boxplot() +
+ geom_jitter(width = 0.2, alpha = 0.3)+
+  labs(
+    title = "Screen Time  by Gender",
+    y = "Screen On Time (hours/day)",
+    x = "Gender"
+  ) +
+  theme_minimal()
+```
+
+#### Plot 9: Faceted Boxplots for Multiple Metrics
+
+```{r}
+userBehavior |>
+  select(user_behavior_class, app_usage_time_min_day, screen_on_time_hours_day, battery_drain_m_ah_day) |>
+  pivot_longer(-user_behavior_class, names_to = "metric", values_to = "value") |>
+  ggplot(aes(x = user_behavior_class, y = value, fill = user_behavior_class)) +
+  geom_boxplot() +
+  facet_wrap(~ metric, scales = "free_y") +
+  labs(title = "Device Metrics by User Behavior Class",
+       x = "User Behavior Class", y = "Value") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+```
+#### Plot 10: screen time vs app usage by age group (faceted Scatter plot)
+Insight: Reveals which devices or OS are more power-efficient under high usage.
+
+```{r}
+ggplot(userBehavior, aes(x = battery_drain_m_ah_day,
+                 y = screen_on_time_hours_day,
+                 color = device_model)) +
+  geom_point(alpha = 0.7, size = 2.5) +
+  facet_wrap(~operating_system) +
+  labs(
+    title = "Battery drain vs Screen Time by Operating System",
+    x = "Battery Drain (Min/day)",
+    y = "Screen On Time (hours/day)"
+  ) +
+  theme_minimal()
+
+```
+
+#### Plot 11: Heatmap of Correlations (Not covered in class)
+
+```{r}
+# Select numeric variables
+# Select numeric variables
+num_vars <- userBehavior %>%
+  select(app_usage_time_min_day, screen_on_time_hours_day,
+         battery_drain_m_ah_day, number_of_apps_installed,
+         data_usage_mb_day, age)
+
+# Compute correlation matrix
+cor_matrix <- round(cor(num_vars, use = "pairwise.complete.obs"), 2)
+
+# Melt for ggplot
+cor_long <- melt(cor_matrix)
+
+# Plot heatmap (0 to 1 scale)
+ggplot(cor_long, aes(Var1, Var2, fill = value)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = round(value, 2)), color = "black", size = 3) +
+  scale_fill_gradientn(
+    colours = c("white", "yellow", "orange", "red", "darkred"),
+    limits  = c(0, 1),
+    name    = "Correlation"
+  ) +
+  labs(title = "Heatmap of Positive Correlations (0–1)",
+       x = NULL, y = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
