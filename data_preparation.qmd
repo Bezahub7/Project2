@@ -47,6 +47,39 @@ if(!require(reshape2)){
     install.packages("reshape2")
     library(reshape2)
 }
+
+if(!require(shinycssloaders)){
+    install.packages("shinycssloaders")
+    library(shinycssloaders)
+}
+
+if(!require(bslib)){
+    install.packages("bslib")
+    library(bslib)
+}
+
+if(!require(DT)){
+    install.packages("DT")
+    library(DT)
+}
+
+if(!require(scales)){
+    install.packages("scales")
+    library(scales)
+}
+
+if(!require(forcats)){
+    install.packages("forcats")
+    library(forcats)
+}
+
+
+if(!require(stringr)){
+    install.packages("stringr")
+    library(stringr)
+}
+
+
 ```
 
 #Prepare your data
@@ -101,6 +134,9 @@ userBehavior$user_behavior_class_label <- factor(
   ordered = TRUE
 )
 userBehavior
+
+# save my data
+saveRDS(data, file = "data/userbehavior.rds")
 ```
 
 ## Explore the dataset 
