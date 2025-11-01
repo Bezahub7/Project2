@@ -135,8 +135,9 @@ userBehavior$user_behavior_class_label <- factor(
 )
 userBehavior
 
-# save my data
-saveRDS(data, file = "data/userbehavior.rds")
+# save my derived data
+saveRDS(userBehavior, file = "data/userbehavior_der.rds")
+write.csv(userBehavior,"data/userbehavior_der.csv",row.names = FALSE)
 ```
 
 ## Explore the dataset 
