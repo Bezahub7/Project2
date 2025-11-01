@@ -77,16 +77,78 @@ ui <- page_fluid(
       selectInput(inputId="num_var2", 
                   label   ="Select numeric variable:",
                   choices = numeric_vars, selected = "data_usage_mb_day"),
-      uiOutput("num_range2_ui")
-      ),
+      uiOutput("num_range2_ui"),
+      
       # dynamic range slider
-
- mainPanel(
-   
-   )
+    # --- Apply button: subsetting is applied ONLY when this is pressed ---
+    actionButton("apply_filters", "Apply Subset", class = "btn btn-primary"),
+    br(),
+    helpText("Note: Adjust selections, then click 'Apply Subset' to update data across tabs.")
+  ),
+  
+  mainPanel(
+    width = 8,
+    tabsetPanel(
+      id = "tabs",
+      # ---- About (default) ----
+      tabPanel(
+        title = "About",
+        value = "about",
+        h3("About This App"),
+        p(strong("Purpose:"), "Explore mobile users behavior with interactive subsetting and Exploratory Data Analysis (EDA)."),
+        p(strong("About Dataset:"), "This dataset provides a comprehensive analysis of mobile device usage patterns 
+        and user behavior classification. It contains 700 samples of user data, including metrics such as app usage time, 
+        screen-on time, battery drain, and data consumption."),
+        p(
+          "This app uses the ",
+          a(
+            href = "https://www.kaggle.com/datasets/valakhorasani/mobile-device-usage-and-user-behavior-dataset",
+            target = "_blank",
+            "Mobile Device Usage and User Behavior Dataset "
+          ),
+          "from ",
+          img(
+            src = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Kaggle_logo.png",
+            alt = "Kaggle Logo",
+            width = "60px",
+            style = "vertical-align: middle; margin-left: 6px;"
+          ),
+          "."
+        )
+        ,
+        p(strong("Sidebar:"), "Choose categorical levels to include and define ranges for two numeric variables. ",
+          "Click 'Apply Subset' to update the dataset used by other tabs."),
+        
+        p(
+          strong("Tabs:"), " ",
+          br(),
+          em("Data Download:"),
+          " provides a view of the (subsetted) data and allows downloading.", 
+          br(),
+          em("Data Exploration:"),
+          " provides numeric and graphical summaries including tables (one-/two-way) and plots (boxplots, histograms, scatter, heatmap), with options for coloring and faceting."
+        )
+        ,
+        
+        # Relevant image path or URL
+        tags$img(src = "https://storage.googleapis.com/kaggle-datasets-images/5784553/9504237/8dad205de91ba816c0db61edef10aa15/dataset-cover.jpeg?t=2024-09-28-20-44-40",
+                 alt = "Smartphone Illustration", width = "350",
+                 style = "border: 1px solid #ddd; border-radius: 8px; padding: 6px;")
+      ),
+      
+      
+     
+          )
+        )
+      )
     )
-  )
+  
+  
 
+
+
+
+  
 
 
 # ---- SERVER ----
@@ -113,7 +175,8 @@ server <- function(input, output, session) {
   })
   
   # ---------- Apply subset on demand ----------
-  
+  # Store subset in reactiveValues; only recompute when "Apply Subset" is pressed.
+  rv <- reactiveValues(data = userBehavior) 
   observeEvent(input$apply_filters, {
     dat <- userBehavior
     
@@ -138,10 +201,12 @@ server <- function(input, output, session) {
     rv$data <- dat
   }, ignoreInit = TRUE)
   
+  # A convenience reactive that always returns the latest applied subset
+  filtered_data <- reactive({
+    rv$data
+  })
+  
 
-  
- 
-  
 }
 
 
