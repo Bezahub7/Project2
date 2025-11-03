@@ -135,7 +135,15 @@ ui <- page_fluid(
                  alt = "Smartphone Illustration", width = "350",
                  style = "border: 1px solid #ddd; border-radius: 8px; padding: 6px;")
       ),
-      
+# ---- Data Download ----
+      tabPanel(
+        title = "Data Download",
+        value = "download",
+        h3("View & Download Data"),
+        DTOutput("data_tbl") %>% withSpinner(type = 6),
+        br(),
+        downloadButton("dl_data", "Download CSV", class = "btn btn-success")
+      ),      
       
      
           )
@@ -205,7 +213,22 @@ server <- function(input, output, session) {
   filtered_data <- reactive({
     rv$data
   })
+  # ---------- Data Download Tab ----------
+  output$data_tbl <- renderDT({
+    dat <- filtered_data()
+    validate(need(nrow(dat) > 0, "No rows after filtering. Adjust filters and click 'Apply Subset'."))
+    datatable(dat, options = list(pageLength = 10, scrollX = TRUE),
+              rownames = FALSE, filter = "top")
+  })
   
+  output$dl_data <- downloadHandler(
+    filename = function() {
+      paste0("userBehavior_subset_", Sys.Date(), ".csv")
+    },
+    content = function(file) {
+      readr::write_csv(filtered_data(), file)
+    }
+  )  
 
 }
 
