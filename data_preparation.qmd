@@ -237,24 +237,25 @@ ggplot(userBehavior |> drop_na(user_behavior_class, app_usage_time_min_day),
 
 ```
 
-#### Plot 3: App usage by age group
+#### Plot 3: App usage by Operating system (histogram)
 l
 ```{r}
-g <- ggplot(userBehavior |> drop_na(app_usage_time_min_day, age_group) ,
- aes(x = age_group, y = app_usage_time_min_day, fill = age_group))
-g + geom_boxplot() +
+g <- ggplot(userBehavior |> drop_na(app_usage_time_min_day, operating_system) ,
+ aes(x = app_usage_time_min_day,  fill = operating_system))
+g + geom_histogram(position = "identity", bins = 35,alpha = 0.5  ) +
  
   labs(
-    title = "App Usage by Age Group",
-    y = "App Usage (min/day)",
-    x = "Age Group"
+    title = "Distribution of App Usage by Operating System",
+    X = "App Usage (min/day)",
+    y = "count",
+    fill="operating_system"
   ) +
   theme_minimal()
 ```
 
 
 
-#### Plot 4: Distribution of operating system by gender  (Boxplot)
+#### Plot 4: Distribution of operating system by gender  (Bar chart)
 
 ```{r}
 g <- ggplot(data = userBehavior |> drop_na(gender, operating_system), aes(x = gender, fill = operating_system))
@@ -387,4 +388,6 @@ ggplot(cor_long, aes(Var1, Var2, fill = value)) +
   theme_minimal(base_size = 12) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
+
+
 
