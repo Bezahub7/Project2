@@ -7,9 +7,9 @@ Users can subset, visualize and download (full or subsetted) data from the app.
 
 ### Key Variables 
 This are the most important variables used in the analysis and when creating visualizations.  
-|Variable Name---------------|--------------Description----------------------------|--Type--|
+|          Variable Name     |                   Description                       |  Type  |
 |:---------------------------|:----------------------------------------------------|:------:|
-|app_usage_time_min_day------|Average minutes per day spent using apps-------------|Numeric-|  
+|app_usage_time_min_day------|Average minutes per day spent using apps-------------|Numeric|  
 |screen_on_time_hours_day----|Total screen-on time per day (hours)-----------------|Numeric  
 |battery_drain_m_ah_day------|Battery percentage drained per day-------------------|Numeric  
 |number_of_apps_installed----|Total number of apps installed-----------------------|Numeric  
