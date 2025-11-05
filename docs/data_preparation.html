@@ -116,14 +116,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#packages" id="toc-packages" class="nav-link active" data-scroll-target="#packages">Packages</a>
-  <ul class="collapse">
+  <ul>
   <li><a href="#data-manipulation" id="toc-data-manipulation" class="nav-link" data-scroll-target="#data-manipulation">Data Manipulation</a></li>
   <li><a href="#explore-the-dataset" id="toc-explore-the-dataset" class="nav-link" data-scroll-target="#explore-the-dataset">Explore the dataset</a>
   <ul class="collapse">
   <li><a href="#one-way-contingency-tables" id="toc-one-way-contingency-tables" class="nav-link" data-scroll-target="#one-way-contingency-tables">One-Way contingency tables</a></li>
   <li><a href="#two-way-contingency-tables" id="toc-two-way-contingency-tables" class="nav-link" data-scroll-target="#two-way-contingency-tables">Two-Way contingency tables</a></li>
   <li><a href="#numerical-summaries-for-quantitative-variables-by-categorical-groups" id="toc-numerical-summaries-for-quantitative-variables-by-categorical-groups" class="nav-link" data-scroll-target="#numerical-summaries-for-quantitative-variables-by-categorical-groups">Numerical summaries for quantitative variables by categorical groups</a></li>
-  <li><a href="#graphical-summaries" id="toc-graphical-summaries" class="nav-link" data-scroll-target="#graphical-summaries">Graphical Summaries</a></li>
+  <li><a href="#graphical-summaries" id="toc-graphical-summaries" class="nav-link" data-scroll-target="#graphical-summaries">Graphical Summaries</a>
+  <ul class="collapse">
+  <li><a href="#plot-1-distribution-of-user-behavior-class-univariate-bar-plot" id="toc-plot-1-distribution-of-user-behavior-class-univariate-bar-plot" class="nav-link" data-scroll-target="#plot-1-distribution-of-user-behavior-class-univariate-bar-plot">Plot 1: Distribution of user behavior class (Univariate Bar Plot)</a></li>
+  <li><a href="#plot-2-app-usage-time-by-behavior-class-boxplot" id="toc-plot-2-app-usage-time-by-behavior-class-boxplot" class="nav-link" data-scroll-target="#plot-2-app-usage-time-by-behavior-class-boxplot">Plot 2: App Usage Time by Behavior Class (Boxplot)</a></li>
+  <li><a href="#plot-3-app-usage-by-operating-system-histogram" id="toc-plot-3-app-usage-by-operating-system-histogram" class="nav-link" data-scroll-target="#plot-3-app-usage-by-operating-system-histogram">Plot 3: App usage by Operating system (histogram)</a></li>
+  <li><a href="#plot-4-distribution-of-operating-system-by-gender-bar-chart" id="toc-plot-4-distribution-of-operating-system-by-gender-bar-chart" class="nav-link" data-scroll-target="#plot-4-distribution-of-operating-system-by-gender-bar-chart">Plot 4: Distribution of operating system by gender (Bar chart)</a></li>
+  <li><a href="#plot-5-data-usage-by-behavior-class-and-gender-multivariate-boxplot-with-grouping" id="toc-plot-5-data-usage-by-behavior-class-and-gender-multivariate-boxplot-with-grouping" class="nav-link" data-scroll-target="#plot-5-data-usage-by-behavior-class-and-gender-multivariate-boxplot-with-grouping">Plot 5: Data Usage by Behavior Class and Gender (Multivariate Boxplot with Grouping)</a></li>
+  <li><a href="#plot-6-app-usage-vs-data-usage-colored-by-operating-system-scatterplot" id="toc-plot-6-app-usage-vs-data-usage-colored-by-operating-system-scatterplot" class="nav-link" data-scroll-target="#plot-6-app-usage-vs-data-usage-colored-by-operating-system-scatterplot">Plot 6: App Usage vs Data Usage colored by Operating System (Scatterplot)</a></li>
+  <li><a href="#plot-7-app-usage-vs-data-usage-colored-by-operating-system-scatterplot" id="toc-plot-7-app-usage-vs-data-usage-colored-by-operating-system-scatterplot" class="nav-link" data-scroll-target="#plot-7-app-usage-vs-data-usage-colored-by-operating-system-scatterplot">Plot 7: App Usage vs Data Usage colored by Operating System (Scatterplot)</a></li>
+  <li><a href="#plot-8-screen-time-by-gender-boxplots-with-points" id="toc-plot-8-screen-time-by-gender-boxplots-with-points" class="nav-link" data-scroll-target="#plot-8-screen-time-by-gender-boxplots-with-points">Plot 8: Screen time by gender (Boxplots with Points)</a></li>
+  <li><a href="#plot-9-faceted-boxplots-for-multiple-metrics" id="toc-plot-9-faceted-boxplots-for-multiple-metrics" class="nav-link" data-scroll-target="#plot-9-faceted-boxplots-for-multiple-metrics">Plot 9: Faceted Boxplots for Multiple Metrics</a></li>
+  <li><a href="#plot-10-screen-time-vs-app-usage-by-age-group-faceted-scatter-plot" id="toc-plot-10-screen-time-vs-app-usage-by-age-group-faceted-scatter-plot" class="nav-link" data-scroll-target="#plot-10-screen-time-vs-app-usage-by-age-group-faceted-scatter-plot">Plot 10: screen time vs app usage by age group (faceted Scatter plot)</a></li>
+  <li><a href="#plot-11-heatmap-of-correlations-not-covered-in-class" id="toc-plot-11-heatmap-of-correlations-not-covered-in-class" class="nav-link" data-scroll-target="#plot-11-heatmap-of-correlations-not-covered-in-class">Plot 11: Heatmap of Correlations (Not covered in class)</a></li>
+  </ul></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -574,7 +587,6 @@ Android     iOS
 </section>
 <section id="plot-3-app-usage-by-operating-system-histogram" class="level4">
 <h4 class="anchored" data-anchor-id="plot-3-app-usage-by-operating-system-histogram">Plot 3: App usage by Operating system (histogram)</h4>
-<p>l</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(userBehavior <span class="sc">|&gt;</span> <span class="fu">drop_na</span>(app_usage_time_min_day, operating_system) ,</span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">aes</span>(<span class="at">x =</span> app_usage_time_min_day,  <span class="at">fill =</span> operating_system))</span>

@@ -2,6 +2,7 @@
 title: "Project 2: data preparation"
 format: html
 toc: TRUE
+toc-depth: 4
 editor: visual
 ---
 
@@ -238,7 +239,6 @@ ggplot(userBehavior |> drop_na(user_behavior_class, app_usage_time_min_day),
 ```
 
 #### Plot 3: App usage by Operating system (histogram)
-l
 ```{r}
 g <- ggplot(userBehavior |> drop_na(app_usage_time_min_day, operating_system) ,
  aes(x = app_usage_time_min_day,  fill = operating_system))
