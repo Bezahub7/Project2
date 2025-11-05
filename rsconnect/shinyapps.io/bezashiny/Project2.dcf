@@ -1,0 +1,12 @@
+name: Project2
+title: Project2
+username: bezashiny
+account: bezashiny
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 15973852
+bundleId: 11134894
+url: https://bezashiny.shinyapps.io/Project2/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
