@@ -17,16 +17,17 @@ library(janitor)
 userBehavior <- readRDS("./data/userbehavior_der.rds")
 userBehavior
 
+# call our helper functions
 source("helpers.R")
 # ---- UI ----
 ui <- page_fluid(
-  
+ #creating the sidebar with widgets to allow user to subset data 
   titlePanel("Interactive EDA: Mobile User Behavior"),
   sidebarLayout(
     sidebarPanel(
       width = 3,
       h4("Subset Data"),
-      
+      #let's use gender and operating system as the two categorical variables users can can subset from
       # --- Categorical filters w/ "All" ---
       # 1) Gender
       checkboxGroupInput(
@@ -45,31 +46,30 @@ ui <- page_fluid(
       ),
       
       
-      # --- Numeric Subsetting: choose variable, then dynamic 2-value slider ---
+      # --- Numeric Subsetting: choose two  variables, then dynamic 2-value slider ---
       h5("Numeric filter 1"),
       selectInput(inputId="num_var1",
                   label   ="Select numeric variable:",
-                  choices = numeric_vars, selected = "app_usage_time_min_day"),
+                  choices = numeric_vars, selected = "app_usage_time_min_day"),#defaulted on app usage
       uiOutput("num_range1_ui"),   # dynamic range slider
       
       h5("Numeric filter 2"),
       selectInput(inputId="num_var2", 
                   label   ="Select numeric variable:",
-                  choices = numeric_vars, selected = "data_usage_mb_day"),
-      uiOutput("num_range2_ui"),
-      
-      # dynamic range slider
+                  choices = numeric_vars, selected = "data_usage_mb_day"),# defaulted on data usage
+      uiOutput("num_range2_ui"),# dynamic range slider
     # --- Apply button: subsetting is applied ONLY when this is pressed ---
-    actionButton("apply_filters", "Apply Subset", class = "btn btn-primary"),
+    actionButton(inputId ="apply_filters", label="Apply Subset", class = "btn btn-primary"),
     br(),
-    helpText("Note: Adjust selections, then click 'Apply Subset' to update data across tabs.")
+    helpText("Note: Adjust selections, then click 'Apply Subset' to update data across tabs.") # note to help user on how to use the apply button
   ),
   
   mainPanel(
     width = 9,
     tabsetPanel(
       id = "tabs",
-      # ---- About (default) ----
+      # ---- About tab: include the purpose, the link for the data, image related to the data,logo, side bar use, brief description and 
+      # link for the other tabs----
       tabPanel(
         title = "About",
         value = "about",
@@ -101,10 +101,10 @@ ui <- page_fluid(
         p(
           strong("Tabs:"), " ",
           br(),
-          em(actionLink("go_download", "Data Download", style = "text-decoration: underline; cursor: pointer;")),#make it clickable
+          em(actionLink(inputId = "go_download", label = "Data Download", style = "text-decoration: underline; cursor: pointer;")),#make it clickable
           " provides a view of the (subsetted) data and allows downloading.", 
           br(),
-          em(actionLink("go_explore","Data Exploration", style ="text-decoration: underline; cursor: pointer;")),
+          em(actionLink(inputId = "go_explore",label = "Data Exploration", style ="text-decoration: underline; cursor: pointer;")),
           " provides numeric and graphical summaries including tables (one-/two-way) and plots (boxplots, histograms, scatter, heatmap), with options for coloring and faceting."
         )
         ,
@@ -114,14 +114,14 @@ ui <- page_fluid(
                  alt = "Smartphone Illustration", width = "350",
                  style = "border: 1px solid #ddd; border-radius: 8px; padding: 6px;")
       ),
-# ---- Data Download ----
+# ---- Data Download tab ----
       tabPanel(
         title = "Data Download",
         value = "download",
         h3("View & Download Data"),
-        DTOutput("data_tbl") %>% withSpinner(type = 6),
+        DTOutput("data_tbl") %>% withSpinner(type = 6), #to show loading spinner while tab is redering
         br(),
-        downloadButton("dl_data", "Download CSV", class = "btn btn-success")
+        downloadButton(outputId="dl_data", label="Download CSV", class = "btn btn-success")
       ),      
 # ---- Data Exploration ----
 tabPanel(
@@ -210,7 +210,7 @@ server <- function(input, output, session) {
   # ---------- Data Download Tab ----------
   output$data_tbl <- renderDT({
     dat <- filtered_data()
-    validate(need(nrow(dat) > 0, "No rows after filtering. Adjust filters and click 'Apply Subset'."))
+    validate(need(nrow(dat) > 0, "No rows after filtering. Adjust filters and click 'Apply Subset'.")) #accounting for error
     datatable(dat, options = list(pageLength = 10, scrollX = TRUE),
               rownames = FALSE, filter = "top")
   })
@@ -235,7 +235,7 @@ server <- function(input, output, session) {
   ) 
   # ---------- Data Exploration Controls (left pane) ----------
   output$explore_controls_ui <- renderUI({
-    mode <- input$explore_mode
+    mode <- input$explore_mode  # a logic for data summarization based on users choice
     
     if (mode == "cats") {
       fluidRow(
@@ -269,13 +269,15 @@ server <- function(input, output, session) {
                                 "Faceted Boxplots (3 metrics by class)" = "facet_boxes",
                                 "Correlation Heatmap (0–1)" = "heatmap")),
         # Conditional controls based on plot type
+        #1 for bar chart
         conditionalPanel(
           condition = "input.plot_type == 'bar_cat'",
           selectInput("bar_cat_var", "Categorical variable:",
                       choices = categorical_vars, selected = "user_behavior_class"),
           selectInput("bar_fill", "Fill (color) by:",
-                      choices = c("None" = ".", categorical_vars), selected = ".")
+                      choices = c("None" = ".", categorical_vars), selected = ".") #if user didn't choose fill by color we will have a chart for the all data
         ),
+        #2 for box plot
         conditionalPanel(
           condition = "input.plot_type == 'box_by_cat'",
           selectInput("box_num", "Numeric variable:",
@@ -285,7 +287,7 @@ server <- function(input, output, session) {
           selectInput("box_fill", "Fill (color) by:",
                       choices = c("None" = ".", categorical_vars), selected = ".")
         ),
-        
+        #3 for box plot with points
         conditionalPanel(
           condition = "input.plot_type == 'box_by_cat_with_pts'",
           selectInput("boxpt_num", "Numeric variable:",
@@ -295,6 +297,7 @@ server <- function(input, output, session) {
           selectInput("boxpt_fill", "Fill (color) by:",
                       choices = c("None" = ".", categorical_vars), selected = ".")
         ),
+        #4 for histogram
         conditionalPanel(
           condition = "input.plot_type == 'hist_num'",
           selectInput("hist_num_var", "Numeric variable:",
@@ -304,6 +307,7 @@ server <- function(input, output, session) {
           sliderInput("hist_bins", "Bins:", min = 10, max = 80, value = 35, step = 5),
           checkboxInput("hist_density", "Show density overlay", FALSE)
         ),
+        #6 for scatter plot
         conditionalPanel(
           condition = "input.plot_type == 'scatter'",
           selectInput("sc_x", "X (numeric):", choices = numeric_vars, selected = "app_usage_time_min_day"),
@@ -313,6 +317,7 @@ server <- function(input, output, session) {
           checkboxInput("sc_smooth", "Add linear smooth", TRUE),
           sliderInput("pt_alpha", "Point alpha:", min = 0.2, max = 1, value = 0.7, step = 0.05)
         ),
+        #7 for box plot(facated)
         conditionalPanel(
           condition = "input.plot_type == 'facet_boxes'",
           helpText("Shows 3 key metrics (app usage, screen-on time, battery drain) by class."),
@@ -348,6 +353,7 @@ server <- function(input, output, session) {
     }
   })
   # ---------- Tables ----------
+  #for one way contingency table
   output$oneway_tbl <- renderTable({
     dat <- filtered_data()
     validate(need(nrow(dat) > 0, "No data after filtering."))
@@ -355,7 +361,7 @@ server <- function(input, output, session) {
     as.data.frame(table(dat[[v]]), stringsAsFactors = FALSE) |>
       `colnames<-`(c(nice_var_label(v), "Count"))
   })
-  
+  # for two way contingency table
   output$twoway_tbl <- renderTable({
     dat <- filtered_data()
     validate(need(nrow(dat) > 0, "No data after filtering."))
